@@ -1,0 +1,34 @@
+[
+  {
+    "type": "pag-ibig",
+    "link": "https://www.pagibigfundservices.com/OnlinePublicAuction",
+    "discount": "Properties with no discount (1st auction)",
+    "branch": "BACOLOD BRANCH",
+    "tranche_number": "OPA5910008",
+    "batch_no": "OPA5910008",
+    "areas": [
+      "NEGROS OCCIDENTAL",
+      "ILOILO",
+      "ANTIQUE",
+      "CAPIZ"
+    ],
+    "bid_acceptance_start": "2025-06-09T00:00:00",
+    "bid_acceptance_end": "2025-06-13T23:59:00",
+    "opening_of_offers": "2025-06-19T09:00:00",
+    "ropa_id": "858202309280002",
+    "prop_location": "Lot 3795-D-3-E Blk. PSD-411410 CAGAY, ROXAS CITY, CAPIZ, 5800",
+    "prop_type": "Lot Only",
+    "tct_cct_no": "097-2024002768",
+    "lot_area": "352",
+    "floor_area": "0",
+    "min_sellprice": 915200,
+    "appr_date": "2024-05-31T00:00:00",
+    "req_gross": 16100.13,
+    "remarks": "UNOCCUPIED-LOT - TITLE UNDER HDMF",
+    "status": "1",
+    "city_muni": "ROXAS CITY",
+    "inspection_date": "2025-04-25T00:00:00",
+    "ins_remarks": "11.567913,122.729103",
+    "updated_on": "2025-06-12T02:11:25.727309Z"
+  }
+]
