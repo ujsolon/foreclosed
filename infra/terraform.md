@@ -63,3 +63,14 @@ aws_dynamodb_table.properties: Creating...
 aws_dynamodb_table.properties: Still creating... [00m10s elapsed]
 aws_dynamodb_table.properties: Creation complete after 14s [id=properties]
 ```
+
+[13 June 2025] Deploying a Amplify table (`amplify.tf`):
+
+```
+aws_amplify_app.foreclosed_frontend: Creating...
+aws_amplify_app.foreclosed_frontend: Creation complete after 5s [id=d16p20066pnktg]
+aws_amplify_branch.foreclosed_frontend_main: Creating...
+aws_amplify_branch.foreclosed_frontend_main: Creation complete after 2s [id=d16p20066pnktg/main]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+```
