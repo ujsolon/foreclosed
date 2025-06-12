@@ -9,7 +9,7 @@ frontend:
         - echo "=== Checking for frontend directory ==="
         - ls -la frontend/ || echo "No frontend directory found"
         - cd frontend
-        - npm ci
+        - npm install
     build:
       commands:
         - echo "=== Starting build ==="
