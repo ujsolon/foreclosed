@@ -3,22 +3,6 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm install
-    build:
-      commands:
-        - npm run build
-  artifacts:
-    baseDirectory: build
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**/*
-version: 1.0
-frontend:
-  phases:
-    preBuild:
-      commands:
         - echo "=== DEBUGGING BUILD - Repository YML Working ==="
         - pwd
         - ls -la
