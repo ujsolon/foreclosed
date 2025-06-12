@@ -19,7 +19,7 @@ frontend:
         - ls -la
         - ls -la build/ || echo "No build directory found"
         - echo "=== Ensuring build directory has correct structure ==="
-        - test -f build/index.html || echo "WARNING: index.html not found in build directory"
+        - test -f build/index.html || echo "WARNING index.html not found in build directory"
   artifacts:
     baseDirectory: frontend/build
     files:
