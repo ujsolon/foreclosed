@@ -4,6 +4,9 @@ import json
 import re
 from datetime import datetime
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 BASE_URL = "https://www.pagibigfundservices.com/OnlinePublicAuction"
 API_URL = f"{BASE_URL}/ListofProperties/Load_ListProperties"
@@ -96,7 +99,7 @@ def parse_datetime(text):
 
 def fetch_properties(batch_no):
     params = {"batchno": batch_no, "flag": "1", "ropa_id": ""}
-    print(f"📦 Fetching properties for batch {batch_no}...")
+    logging.info(f"📦 Fetching properties for batch {batch_no}...")
     try:
         res = session.get(API_URL, headers=HEADERS, params=params)
         res.raise_for_status()
@@ -105,16 +108,19 @@ def fetch_properties(batch_no):
         print(f"❌ Failed to fetch batch {batch_no}: {e}")
         return []
 
-
 def enrich_with_properties(batch_meta):
     all_data = []
-    for record in batch_meta:
+    updated_on = datetime.utcnow().isoformat() + "Z"
+
+    for i, record in enumerate(batch_meta, 1):
+        # print(f"\n🔄 [{i}/{len(batch_meta)}] Enriching batch {record['batch_no']} from branch {record['branch']} ({record['discount']})")
         props = fetch_properties(record["batch_no"])
         for p in props:
-            enriched = {**record, **p}
+            enriched = {**record, **p, "updated_on": updated_on}
             all_data.append(enriched)
         time.sleep(1)
     return all_data
+
 
 def save_as_json(data, filename="pagibig_enriched.json"):
     with open(filename, "w", encoding="utf-8") as f:
