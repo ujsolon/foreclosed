@@ -2,16 +2,10 @@ resource "aws_dynamodb_table" "properties" {
   name         = "properties"
   billing_mode = "PAY_PER_REQUEST"
 
-  hash_key     = "batch_no"
-  range_key    = "ropa_id"
+  hash_key     = "source_property_id"
 
   attribute {
-    name = "batch_no"
-    type = "S"
-  }
-
-  attribute {
-    name = "ropa_id"
+    name = "source_property_id"
     type = "S"
   }
 
