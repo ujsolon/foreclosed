@@ -1,4 +1,4 @@
-version: 1.0
+version: 1
 frontend:
   phases:
     preBuild:
@@ -18,6 +18,8 @@ frontend:
         - echo "=== After build, checking output ==="
         - ls -la
         - ls -la build/ || echo "No build directory found"
+        - echo "=== Ensuring build directory has correct structure ==="
+        - test -f build/index.html || echo "WARNING: index.html not found in build directory"
   artifacts:
     baseDirectory: frontend/build
     files:
