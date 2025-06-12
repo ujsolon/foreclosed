@@ -71,7 +71,6 @@ def parse_main_page():
 
                     all_records.append({
                         "type": "pag-ibig",
-                        "link": BASE_URL,
                         "discount": discount_label,
                         "branch": branch_name,
                         "tranche_number": tranche_number,
