@@ -1,67 +1,127 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import re
+from datetime import datetime
 import time
 
-# Headers for mimicking a browser
+BASE_URL = "https://www.pagibigfundservices.com/OnlinePublicAuction"
+API_URL = f"{BASE_URL}/ListofProperties/Load_ListProperties"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36",
     "X-Requested-With": "XMLHttpRequest",
     "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Referer": "https://www.pagibigfundservices.com/OnlinePublicAuction"
+    "Referer": BASE_URL
 }
 
-SESSION = requests.Session()
+session = requests.Session()
 
-# 1. Get the main page HTML
-def get_batch_ids(url):
+def parse_main_page():
     print("Fetching main page...")
-    res = SESSION.get(url, headers=HEADERS)
-    res.raise_for_status()
-    soup = BeautifulSoup(res.text, 'html.parser')
-    buttons = soup.select('.see-list-btn')
-    batch_ids = [(btn['data-batch-no'], btn['data-disposal-flag']) for btn in buttons]
-    print(f"Found {len(batch_ids)} batch numbers.")
-    return batch_ids
+    response = session.get(BASE_URL, headers=HEADERS)
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-# 2. Query the API endpoint per batch number
-def get_property_data(batch_id):
-    url = f"https://www.pagibigfundservices.com/OnlinePublicAuction/ListofProperties/Load_ListProperties"
-    params = {
-        "batchno": batch_id,
-        "flag": "1",
-        "ropa_id": ""
+    all_records = []
+    tab_discounts = {
+        "-1": "Properties with no discount (1st auction)",
+        "-2": "Properties up to 30% discount (2nd auction)",
+        "-3": "Properties up to 45% discount (Negotiated Sale)"
     }
-    print(f"Fetching properties for batch {batch_id}...")
-    response = SESSION.get(url, headers=HEADERS, params=params)
-    response.raise_for_status()
-    return response.json()
 
-# 3. Run the full pipeline
-def scrape_all_batches():
-    master_data = []
-    batch_ids = get_batch_ids("https://www.pagibigfundservices.com/OnlinePublicAuction")
-
-    for batch_id, _ in batch_ids:
-        try:
-            data = get_property_data(batch_id)
-            for item in data:
-                item['batch_no'] = batch_id
-            master_data.extend(data)
-            time.sleep(1)  # polite delay
-        except Exception as e:
-            print(f"Error with batch {batch_id}: {e}")
+    for tab_id, discount_label in tab_discounts.items():
+        tab_div = soup.find("div", id=tab_id)
+        if not tab_div:
             continue
 
-    print(f"Collected {len(master_data)} total property records.")
-    return master_data
+        branches = tab_div.find_all("div", class_="batches")
+        for branch_div in branches:
+            branch_name = branch_div.find("h4").text.strip()
 
-# 4. Save to JSON
-def save_to_json(data, filename="pagibig_properties.json"):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2)
-    print(f"Saved data to {filename}")
+            tranche_entries = branch_div.find_all("div", style=lambda v: v and "padding: 15px 15px" in v)
+            for tranche_div in tranche_entries:
+                try:
+                    raw_html = tranche_div.decode_contents()
+                    
+                    batch_no = re.search(r'data-batch-no="(.*?)"', raw_html)
+                    if not batch_no:
+                        continue
+                    batch_no = batch_no.group(1)
+
+                    areas = re.search(r"<b>Areas: </b>(.*?)</p>", raw_html)
+                    areas_list = [a.strip() for a in areas.group(1).split(",")] if areas else []
+
+                    tranche_number = re.search(r"<b>Tranche Number: </b>(.*?)</p>", raw_html)
+                    tranche_number = tranche_number.group(1) if tranche_number else batch_no
+
+                    acceptance = re.search(r"<b>Duration of Acceptance of Bid Offers: </b>(.*?)</p>", raw_html)
+                    bid_opening = re.search(r"<b>Opening of Offers: </b>(.*?)</p>", raw_html)
+
+                    bid_start, bid_end = None, None
+                    if acceptance:
+                        match = re.match(r"([A-Za-z]+\s\d{1,2},\s\d{4}(?:\s\d{1,2}:\d{2}\s[APMapm]{2})?)\s*-\s*([A-Za-z]+\s\d{1,2},\s\d{4}(?:\s\d{1,2}:\d{2}\s[APMapm]{2})?)", acceptance.group(1))
+                        if match:
+                            bid_start = parse_datetime(match.group(1))
+                            bid_end = parse_datetime(match.group(2))
+
+                    bid_open = parse_datetime(bid_opening.group(1)) if bid_opening else None
+
+                    all_records.append({
+                        "type": "pag-ibig",
+                        "link": BASE_URL,
+                        "discount": discount_label,
+                        "branch": branch_name,
+                        "tranche_number": tranche_number,
+                        "batch_no": batch_no,
+                        "areas": areas_list,
+                        "bid_acceptance_start": bid_start,
+                        "bid_acceptance_end": bid_end,
+                        "opening_of_offers": bid_open,
+                    })
+
+                except Exception as e:
+                    print(f"Error parsing tranche in branch [{branch_name}] with HTML:\n{tranche_div.prettify()[:300]}\nError: {e}")
+                    continue
+
+    return all_records
+
+def parse_datetime(text):
+    try:
+        return datetime.strptime(text.strip(), "%B %d, %Y %I:%M %p").isoformat()
+    except:
+        try:
+            return datetime.strptime(text.strip(), "%B %d, %Y").isoformat()
+        except:
+            return text.strip()
+
+def fetch_properties(batch_no):
+    params = {"batchno": batch_no, "flag": "1", "ropa_id": ""}
+    print(f"📦 Fetching properties for batch {batch_no}...")
+    try:
+        res = session.get(API_URL, headers=HEADERS, params=params)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print(f"❌ Failed to fetch batch {batch_no}: {e}")
+        return []
+
+
+def enrich_with_properties(batch_meta):
+    all_data = []
+    for record in batch_meta:
+        props = fetch_properties(record["batch_no"])
+        for p in props:
+            enriched = {**record, **p}
+            all_data.append(enriched)
+        time.sleep(1)
+    return all_data
+
+def save_as_json(data, filename="pagibig_enriched.json"):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"Saved {len(data)} records to {filename}")
 
 if __name__ == "__main__":
-    data = scrape_all_batches()
-    save_to_json(data)
+    meta_data = parse_main_page()
+    enriched_data = enrich_with_properties(meta_data)
+    save_as_json(enriched_data)
