@@ -1,0 +1,22 @@
+[
+    {
+    "source_name" : "pag-ibig",
+    "source_url" : "https://www.pagibigfundservices.com/OnlinePublicAuction",
+    "primary_key" : "ropa_id"
+    },
+    {
+    "source_name" : "pnb",
+    "source_url" : "https://www.pnb.com.ph/index.php/search-properties",
+    "primary_key" : "title_id"
+    },
+    {
+    "source_name" : "unionbank",
+    "source_url" : "https://www.unionbankph.com/foreclosed-properties",
+    "primary_key" : "id"
+    },
+    {
+    "source_name" : "rcbc",
+    "source_url" : "https://www.rcbc.com/rcbc-properties-for-sale",
+    "primary_key" : "property_account_no"
+    }
+]
