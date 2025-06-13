@@ -3,26 +3,33 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "=== DEBUGGING BUILD - Repository YML Working ==="
-        - pwd
-        - ls -la
-        - echo "=== Checking for frontend directory ==="
-        - ls -la frontend/ || echo "No frontend directory found"
+        - echo "=== Prebuild Phase ==="
         - cd frontend
-        - npm install
+        - npm ci
     build:
       commands:
-        - echo "=== Starting build ==="
-        - pwd
+        - echo "=== Build Phase ==="
         - npm run build
-        - echo "=== After build, checking output ==="
-        - ls -la
-        - ls -la build/ || echo "No build directory found"
     postBuild:
       commands:
         - echo "=== Creating deploy-manifest.json ==="
-        - 'echo "{\"version\": 1, \"framework\": {\"name\": \"react\", \"version\": \"18.2.0\"}}" > build/deploy-manifest.json'
-        - echo "=== Confirm build directory ==="
+        - |
+          echo '{
+            "version": 1,
+            "framework": {
+              "name": "react",
+              "version": "18.2.0"
+            },
+            "routes": [
+              {
+                "path": "/*",
+                "target": {
+                  "kind": "Static"
+                }
+              }
+            ]
+          }' > build/deploy-manifest.json
+        - echo "=== Verifying build directory contents ==="
         - ls -la build/
         - cat build/deploy-manifest.json
   artifacts:
