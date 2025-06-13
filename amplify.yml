@@ -3,13 +3,21 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "=== Prebuild ==="
+        - echo "=== DEBUGGING BUILD - Repository YML Working ==="
+        - pwd
+        - ls -la
+        - echo "=== Checking for frontend directory ==="
+        - ls -la frontend/ || echo "No frontend directory found"
         - cd frontend
-        - npm ci
+        - npm install
     build:
       commands:
-        - echo "=== Build ==="
+        - echo "=== Starting build ==="
+        - pwd
         - npm run build
+        - echo "=== After build, checking output ==="
+        - ls -la
+        - ls -la build/ || echo "No build directory found"
     postBuild:
       commands:
         - echo "=== Creating deploy-manifest.json ==="
