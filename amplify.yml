@@ -18,6 +18,14 @@ frontend:
         - echo "=== After build, checking output ==="
         - ls -la
         - ls -la build/ || echo "No build directory found"
+    postBuild:
+      commands:
+        - echo "=== Creating deploy manifest ==="
+        - mkdir -p build
+        - "echo '{\"version\": 1, \"framework\": \"react\"}' > build/deploy-manifest.json"
+        - echo "=== Verifying deploy manifest created ==="
+        - ls -la build/
+        - cat build/deploy-manifest.json
   artifacts:
     baseDirectory: frontend/build
     files:
