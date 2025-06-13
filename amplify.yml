@@ -23,7 +23,11 @@ frontend:
     postBuild:
       commands:
         - echo "=== Creating deploy manifest ==="
-        - 'echo "{\"version\": 1, \"framework\": \"react\"}" > build/deploy-manifest.json'
+        - mkdir -p build
+        - echo { > build/deploy-manifest.json
+        - echo version: 1, >> build/deploy-manifest.json
+        - echo framework: react >> build/deploy-manifest.json
+        - echo } >> build/deploy-manifest.json
         - echo "=== Verifying deploy manifest created ==="
         - ls -la build/
         - cat build/deploy-manifest.json
