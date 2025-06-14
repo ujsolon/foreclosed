@@ -15,9 +15,9 @@ frontend:
         - echo "=== Starting build ==="
         - pwd
         - npm run build
-        - echo "=== After build, checking output ==="
-        - ls -la
-        - ls -la build/ || echo "No build directory found"
+        - echo "=== Copying build to root ==="
+        - cp -r build ../build
+        - ls -la ../build || echo "No build directory found"
     postBuild:
       commands:
         - echo "=== Creating deploy-manifest.json ==="
@@ -36,12 +36,12 @@ frontend:
                 }
               }
             ]
-          }' > build/deploy-manifest.json
+          }' > ../build/deploy-manifest.json
         - echo "=== Verifying build directory contents ==="
-        - ls -la build/
-        - cat build/deploy-manifest.json
+        - ls -la ../build/
+        - cat ../build/deploy-manifest.json || echo "No manifest found"
   artifacts:
-    baseDirectory: frontend/build
+    baseDirectory: build
     files:
       - '**/*'
   cache:
