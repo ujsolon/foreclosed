@@ -1,11 +1,6 @@
 resource "aws_s3_bucket" "website" {
   bucket = "my-foreclosed-site"  # must be globally unique
 
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
-  }
-
   tags = {
     Environment = "dev"
     Project     = "foreclosed"
@@ -29,6 +24,17 @@ resource "aws_s3_bucket_policy" "allow_public_read" {
   })
 }
 
+resource "aws_s3_bucket_website_configuration" "website_config" {
+  bucket = aws_s3_bucket.website.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
 resource "aws_s3_bucket_ownership_controls" "example" {
   bucket = aws_s3_bucket.website.id
 

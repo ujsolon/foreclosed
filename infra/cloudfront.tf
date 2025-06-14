@@ -1,6 +1,6 @@
 resource "aws_cloudfront_distribution" "cdn" {
   origin {
-    domain_name = aws_s3_bucket.website.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.website_config.website_endpoint
     origin_id   = "s3-website-origin"
     custom_origin_config {
       origin_protocol_policy = "http-only"
