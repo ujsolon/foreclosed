@@ -3,7 +3,9 @@ name: Deploy React App to S3
 on:
   push:
     branches:
-      - main  # or your production branch
+      - main
+    paths:
+      - 'frontend/**'
 
 jobs:
   deploy:
@@ -15,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # or whatever version you're using
+          node-version: '18'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
