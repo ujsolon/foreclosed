@@ -5,6 +5,9 @@ import re
 from datetime import datetime
 import time
 import logging
+import boto3
+import os
+from io import BytesIO
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -120,13 +123,27 @@ def enrich_with_properties(batch_meta):
         time.sleep(1)
     return all_data
 
+def save_as_json_to_s3(data):
+    s3 = boto3.client("s3")
+    bucket_name = os.environ.get("RAW_DATA_BUCKET", "raw-data")  # safer with env var
+    date_today = datetime.utcnow().strftime("%Y-%m-%d")
+    key = f"{date_today}/pagibig.json"
 
-def save_as_json(data, filename="pagibig_enriched.json"):
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"Saved {len(data)} records to {filename}")
+    # Convert Python object to JSON string
+    json_bytes = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8")
+    
+    # Upload to S3
+    try:
+        s3.put_object(Bucket=bucket_name, Key=key, Body=json_bytes, ContentType="application/json")
+        print(f"✅ Saved {len(data)} records to s3://{bucket_name}/{key}")
+    except Exception as e:
+        print(f"❌ Failed to upload to S3: {e}")
 
-if __name__ == "__main__":
+def lambda_handler(event, context):
     meta_data = parse_main_page()
     enriched_data = enrich_with_properties(meta_data)
-    save_as_json(enriched_data)
+    save_as_json_to_s3(enriched_data)
+    return {
+        "statusCode": 200,
+        "body": f"{len(enriched_data)} records scraped and uploaded to S3."
+    }
