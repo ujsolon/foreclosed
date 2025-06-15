@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 resource "aws_lambda_function" "scraper_lambda" {
   function_name = "ScraperLambda"
-  filename      = "${path.module}/scraper_lambda.zip"
+  filename      = var.lambda_package
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
 
