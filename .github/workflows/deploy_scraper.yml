@@ -42,8 +42,8 @@ jobs:
 
       - name: Terraform Plan
         working-directory: infra
-        run: terraform plan -no-color -var="lambda_package=../scraper_lambda.zip"
+        run: terraform plan -no-color
 
       - name: Terraform Apply
         working-directory: infra
-        run: terraform apply -auto-approve -var="lambda_package=../scraper_lambda.zip"
+        run: terraform apply -auto-approve
