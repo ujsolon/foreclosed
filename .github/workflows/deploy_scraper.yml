@@ -1,0 +1,51 @@
+name: Scraper to Lamdba Funtion
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/scraper/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      LAMBDA_ZIP: scraper_lambda.zip
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Create build directory
+        run: |
+          mkdir -p build
+          pip install -r backend/scraper/requirements.txt -t build
+          cp backend/scraper/*.py build
+          cd build && zip -r ../$LAMBDA_ZIP .
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: terraform plan -no-color -var="lambda_package=../$LAMBDA_ZIP"
+
+      - name: Terraform Apply
+        working-directory: infra
+        run: terraform apply -auto-approve -var="lambda_package=../$LAMBDA_ZIP"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
