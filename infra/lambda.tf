@@ -33,6 +33,11 @@ resource "aws_lambda_function" "batch_lambda" {
       ENV = "development"
     }
   }
+
+  tags = {
+    Environment = "dev"
+    Project     = "foreclosed"
+  }
 }
 
 resource "aws_lambda_function" "api_lambda" {
@@ -48,5 +53,10 @@ resource "aws_lambda_function" "api_lambda" {
     variables = {
       ENV = "development"
     }
+  }
+
+  tags = {
+    Environment = "dev"
+    Project     = "foreclosed"
   }
 }
