@@ -1,5 +1,5 @@
 import logging
-from scraper import scraper
+import scraper
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

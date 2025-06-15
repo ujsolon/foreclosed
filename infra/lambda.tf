@@ -28,6 +28,8 @@ resource "aws_lambda_function" "scraper_lambda" {
   source_code_hash = filebase64sha256("${path.module}/scraper_lambda.zip")
   role             = aws_iam_role.lambda_exec_role.arn
 
+  timeout       = 180
+
   environment {
     variables = {
       ENV = "development"
