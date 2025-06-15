@@ -3,7 +3,3 @@ variable "github_token" {
   type        = string
   sensitive   = true
 }
-
-variable "lambda_package" {
-  type = string
-}
