@@ -125,7 +125,7 @@ def enrich_with_properties(batch_meta):
 
 def save_as_json_to_s3(data):
     s3 = boto3.client("s3")
-    bucket_name = os.environ.get("RAW_DATA_BUCKET", "raw-data")  # safer with env var
+    bucket_name = os.environ.get("FORECLOSED_RAW_DATA_BUCKET", "foreclosed-raw-data")  # safer with env var
     date_today = datetime.utcnow().strftime("%Y-%m-%d")
     key = f"{date_today}/pagibig.json"
 

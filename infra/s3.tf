@@ -53,8 +53,8 @@ resource "aws_s3_bucket_public_access_block" "block" {
 }
 
 # S3 Bucket for storing raw data
-resource "aws_s3_bucket" "raw_data" {
-  bucket = "raw-data"
+resource "aws_s3_bucket" "foreclosed_raw_data" {
+  bucket = "foreclosed-raw-data"
 
   tags = {
     Environment = "dev"
@@ -76,8 +76,8 @@ resource "aws_iam_policy" "lambda_s3_access_policy" {
           "s3:ListBucket"
         ],
         Resource = [
-          aws_s3_bucket.raw_data.arn,
-          "${aws_s3_bucket.intermediate_results.arn}/*"
+          aws_s3_bucket.foreclosed_raw_data.arn,
+          "${aws_s3_bucket.foreclosed_raw_data.arn}/*"
         ]
       }
     ]
