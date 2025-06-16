@@ -146,3 +146,11 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": f"{len(enriched_data)} records scraped and uploaded to S3."
     }
+
+def main():
+    meta_data = parse_main_page()
+    enriched_data = enrich_with_properties(meta_data)
+    save_as_json_to_s3(enriched_data)
+
+if __name__ == "__main__":
+    main()
