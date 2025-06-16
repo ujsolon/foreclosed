@@ -8,8 +8,11 @@ import logging
 import boto3
 import os
 
+# --- Logging Setup ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
+# --- Configuration ---
 BASE_URL = "https://www.pagibigfundservices.com/OnlinePublicAuction"
 API_URL = f"{BASE_URL}/ListofProperties/Load_ListProperties"
 
@@ -139,6 +142,7 @@ def save_as_json_to_s3(data):
         print(f"❌ Failed to upload to S3: {e}")
 
 def lambda_handler(event, context):
+    print("🚀 Scraper started...")
     meta_data = parse_main_page()
     enriched_data = enrich_with_properties(meta_data)
     save_as_json_to_s3(enriched_data)
@@ -147,10 +151,5 @@ def lambda_handler(event, context):
         "body": f"{len(enriched_data)} records scraped and uploaded to S3."
     }
 
-def main():
-    meta_data = parse_main_page()
-    enriched_data = enrich_with_properties(meta_data)
-    save_as_json_to_s3(enriched_data)
-
 if __name__ == "__main__":
-    main()
+    lambda_handler()
