@@ -1,5 +1,5 @@
 import logging
-import scraper
+import scraper # Change module name, then change dependencies below
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

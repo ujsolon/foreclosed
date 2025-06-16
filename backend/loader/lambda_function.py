@@ -1,11 +1,15 @@
-# backend\batch\lambda_function.py
+import logging
+import loader # Change module name, then change dependencies below
 
-import json
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
-    print("Received event:", json.dumps(event))
-    
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"message": "Hello from Lambda!"})
-    }
+    try:
+        return loader.lambda_handler(event, context)
+    except Exception as e:
+        logger.error(f"Unhandled exception: {e}", exc_info=True)
+        return {
+            "statusCode": 500,
+            "body": "Internal server error"
+        }
