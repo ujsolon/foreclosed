@@ -31,7 +31,7 @@ jobs:
           mkdir -p build
           pip install -r backend/scraper/requirements.txt -t build
           cp backend/scraper/*.py build
-          cd build && zip -r ../scraper_lambda.zip .
+          cd build && zip -r ../infra/scraper_lambda.zip .
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
