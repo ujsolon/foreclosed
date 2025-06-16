@@ -38,7 +38,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: infra
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Terraform Plan
         working-directory: infra
