@@ -36,9 +36,9 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init (auto-confirm backend migration)
+      - name: Terraform Init
         working-directory: infra
-        run: yes | terraform init
+        run: terraform init -input=false
 
       - name: Terraform Plan
         working-directory: infra

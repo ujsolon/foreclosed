@@ -13,6 +13,7 @@ terraform {
   }
 }
 
+# Comment this out if you want to use local for state management
 terraform {
   backend "s3" {
     bucket  = "foreclosed-tfstate"
