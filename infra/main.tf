@@ -1,6 +1,6 @@
 provider "aws" {
   region  = "us-east-1"
-  profile = "default"  # use the same name you used in `aws configure`
+  # profile = "default"  # use the same name you used in `aws configure`
 }
 
 terraform {
