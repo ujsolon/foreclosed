@@ -7,7 +7,6 @@ import time
 import logging
 import boto3
 import os
-from io import BytesIO
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
