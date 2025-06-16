@@ -1,3 +1,6 @@
+# This Terraform configuration defines AWS Lambda functions and their execution roles.
+# Lambda access policies are added to the resources terraform files, e.g. s3.tf, dynamo.tf, etc.
+
 resource "aws_iam_role" "lambda_exec_role" {
   name = "lambda_exec_role"
 
@@ -51,6 +54,29 @@ resource "aws_lambda_function" "api_lambda" {
 
   source_code_hash = filebase64sha256("${path.module}/api_lambda.zip")
   role             = aws_iam_role.lambda_exec_role.arn
+
+  environment {
+    variables = {
+      ENV = "development"
+    }
+  }
+
+  tags = {
+    Environment = "dev"
+    Project     = "foreclosed"
+  }
+}
+
+resource "aws_lambda_function" "loader_lambda" {
+  function_name = "LoaderLambda"
+  filename      = "${path.module}/loader_lambda.zip"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.11"
+
+  source_code_hash = filebase64sha256("${path.module}/loader_lambda.zip")
+  role             = aws_iam_role.lambda_exec_role.arn
+
+  timeout = 180
 
   environment {
     variables = {
