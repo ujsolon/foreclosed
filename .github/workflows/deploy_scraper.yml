@@ -33,14 +33,13 @@ jobs:
           cp backend/scraper/*.py build
           cd build && zip -r ../infra/scraper_lambda.zip .
       
-      # Try to create dummy ZIP files for the API and loader lambdas
       - name: Create dummy ZIP files for missing lambdas
         working-directory: infra  
         run: |
           # Create minimal dummy zip files for validation
           echo "dummy" | zip -q api_lambda.zip -
           echo "dummy" | zip -q loader_lambda.zip -
-            
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 

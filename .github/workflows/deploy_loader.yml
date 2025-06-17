@@ -33,6 +33,13 @@ jobs:
           cp backend/loader/*.py build
           cd build && zip -r ../infra/loader_lambda.zip .
 
+      - name: Create dummy ZIP files for missing lambdas
+        working-directory: infra  
+        run: |
+          # Create minimal dummy zip files for validation
+          echo "dummy" | zip -q api_lambda.zip -
+          echo "dummy" | zip -q scraper_lambda.zip -
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -42,8 +49,8 @@ jobs:
 
       - name: Terraform Plan
         working-directory: infra
-        run: terraform plan -no-color
+        run: terraform plan -target=aws_lambda_function.loader_lambda -no-color
 
       - name: Terraform Apply
         working-directory: infra
-        run: terraform apply -auto-approve
+        run: terraform apply -target=aws_lambda_function.loader_lambda -auto-approve
