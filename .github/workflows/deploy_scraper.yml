@@ -40,9 +40,10 @@ jobs:
         working-directory: infra
         run: terraform init -input=false
 
+      # Plan only the scraper lambda
       - name: Terraform Plan
         working-directory: infra
-        run: terraform plan -no-color
+        run: terraform plan -target=aws_lambda_function.scraper_lambda -no-color
 
       - name: Terraform Apply
         working-directory: infra
