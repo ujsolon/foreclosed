@@ -1,4 +1,4 @@
-name: Scraper to Lambda Function
+name: Deploy Scraper to Lambda Function via Build, Zip, and Terraform
 
 on:
   workflow_dispatch:
@@ -40,11 +40,10 @@ jobs:
         working-directory: infra
         run: terraform init -input=false
 
-      # Plan only the scraper lambda
       - name: Terraform Plan
         working-directory: infra
         run: terraform plan -target=aws_lambda_function.scraper_lambda -no-color
 
       - name: Terraform Apply
         working-directory: infra
-        run: terraform apply -auto-approve
+        run: terraform apply -target=aws_lambda_function.scraper_lambda -auto-approve
