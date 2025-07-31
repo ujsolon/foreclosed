@@ -36,6 +36,7 @@ def process_data(session):
 
     for i, item in enumerate(data, 1):
         try:
+            # If ropa_id is missing, skip the item. ropa_id is the primary key for PAG-IBIG properties
             if "ropa_id" not in item:
                 logger.warning(f"Skipping item {i} (missing ropa_id): {item}")
                 continue
@@ -43,9 +44,11 @@ def process_data(session):
             item["source_property_id"] = f"pagibig_{item['ropa_id']}"
             key = {"source_property_id": item["source_property_id"]}
 
+            # Check if item already exists in DynamoDB
             response = table.get_item(Key=key)
             existing_item = response.get("Item")
 
+            # If item does not exist, add it. Create timestamp too
             if not existing_item:
                 item["created_on"] = datetime.utcnow().isoformat()
                 table.put_item(Item=item)
@@ -83,13 +86,9 @@ def process_data(session):
         "total": len(data)
     }
 
-def main():
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
-    process_data(session)
-
 def lambda_handler(event, context):
     session = boto3.Session(region_name=region_name)  # Use IAM role in Lambda (no profile)
     return process_data(session)
 
 if __name__ == "__main__":
-    main()
+    lambda_handler()
