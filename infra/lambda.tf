@@ -67,13 +67,19 @@ resource "aws_lambda_function" "api_lambda" {
   }
 }
 
+data "archive_file" "loader_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../backend/loader"
+  output_path = "${path.module}/loader_lambda.zip"
+}
+
 resource "aws_lambda_function" "loader_lambda" {
   function_name = "LoaderLambda"
-  filename      = "${path.module}/loader_lambda.zip"
+  filename         = data.archive_file.loader_zip.output_path
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
 
-  source_code_hash = filebase64sha256("${path.module}/loader_lambda.zip")
+  source_code_hash = data.archive_file.loader_zip.output_base64sha256
   role             = aws_iam_role.lambda_exec_role.arn
 
   timeout = 180
