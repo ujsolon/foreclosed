@@ -45,14 +45,19 @@ resource "aws_lambda_function" "scraper_lambda" {
   }
 }
 
+data "archive_file" "api_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../backend/api"
+  output_path = "${path.module}/api_lambda.zip"
+}
 
 resource "aws_lambda_function" "api_lambda" {
   function_name = "ApiLambda"
-  filename      = "${path.module}/api_lambda.zip"
+  filename         = data.archive_file.api_zip.output_path
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
 
-  source_code_hash = filebase64sha256("${path.module}/api_lambda.zip")
+  source_code_hash = data.archive_file.api_zip.output_base64sha256
   role             = aws_iam_role.lambda_exec_role.arn
 
   environment {
