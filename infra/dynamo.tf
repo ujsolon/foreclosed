@@ -26,7 +26,11 @@ resource "aws_iam_policy" "lambda_dynamodb_access_policy" {
         Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
-          "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem"
         ],
         Resource = "arn:aws:dynamodb:us-east-1:*:table/properties"
       }
