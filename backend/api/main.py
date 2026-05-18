@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Dict, Any, List, Optional
 import boto3
 from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError, ClientError
 import logging
 
 # Configure logging
@@ -17,11 +18,28 @@ logger.setLevel(logging.INFO)
 # Configuration
 TABLE_NAME = os.environ.get("TABLE_NAME", "properties")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+AWS_PROFILE = os.environ.get("AWS_PROFILE", None)
 CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
 
-# Initialize DynamoDB
-dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
-table = dynamodb.Table(TABLE_NAME)
+# Initialize DynamoDB with better error handling
+try:
+    if AWS_PROFILE:
+        logger.info(f"Using AWS profile: {AWS_PROFILE}")
+        session = boto3.Session(profile_name=AWS_PROFILE)
+        dynamodb = session.resource("dynamodb", region_name=AWS_REGION)
+    else:
+        logger.info(f"Using default AWS credentials")
+        dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
+    
+    table = dynamodb.Table(TABLE_NAME)
+    logger.info(f"Connected to DynamoDB table: {TABLE_NAME} in region: {AWS_REGION}")
+except (NoCredentialsError, PartialCredentialsError) as e:
+    logger.error(f"AWS credentials error: {e}")
+    logger.error("Please configure AWS credentials using 'aws configure' or set AWS_PROFILE environment variable")
+    table = None
+except Exception as e:
+    logger.error(f"Error initializing DynamoDB: {e}")
+    table = None
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -181,6 +199,14 @@ def get_properties(params: Dict[str, Any]) -> Dict[str, Any]:
     Get list of properties with filters and pagination
     """
     try:
+        # Check if DynamoDB is initialized
+        if table is None:
+            return create_error_response(
+                500,
+                "Database connection not available",
+                "AWS credentials not configured. Run 'aws configure' or set AWS_PROFILE environment variable."
+            )
+        
         # Build scan parameters
         scan_params = {
             "Limit": params["limit"]
@@ -224,6 +250,25 @@ def get_properties(params: Dict[str, Any]) -> Dict[str, Any]:
     except ValueError as e:
         logger.error(f"Validation error: {e}")
         return create_error_response(400, "Invalid request", str(e))
+    except NoCredentialsError:
+        logger.error("AWS credentials not found")
+        return create_error_response(
+            500,
+            "AWS credentials not configured",
+            "Run 'aws configure' to set up your credentials"
+        )
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'UnrecognizedClientException':
+            logger.error(f"Invalid AWS credentials: {e}")
+            return create_error_response(
+                500,
+                "Invalid AWS credentials",
+                "Your AWS credentials are invalid or expired. Run 'aws configure' to update them."
+            )
+        else:
+            logger.error(f"AWS error: {e}")
+            return create_error_response(500, "AWS service error", str(e))
     except Exception as e:
         logger.error(f"Error getting properties: {e}", exc_info=True)
         return create_error_response(500, "Internal server error", str(e))
@@ -234,6 +279,14 @@ def get_property_by_id(property_id: str) -> Dict[str, Any]:
     Get a single property by source_property_id
     """
     try:
+        # Check if DynamoDB is initialized
+        if table is None:
+            return create_error_response(
+                500,
+                "Database connection not available",
+                "AWS credentials not configured. Run 'aws configure' or set AWS_PROFILE environment variable."
+            )
+        
         if not property_id:
             return create_error_response(400, "Property ID is required")
         
@@ -255,6 +308,14 @@ def get_statistics() -> Dict[str, Any]:
     Get aggregated statistics about properties
     """
     try:
+        # Check if DynamoDB is initialized
+        if table is None:
+            return create_error_response(
+                500,
+                "Database connection not available",
+                "AWS credentials not configured. Run 'aws configure' or set AWS_PROFILE environment variable."
+            )
+        
         logger.info("Calculating statistics...")
         
         # Scan all items (in production, consider using a separate aggregation table)
