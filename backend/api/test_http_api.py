@@ -81,15 +81,34 @@ class APITester:
         try:
             response = requests.request(method, url, params=params, timeout=30)
             self.print_verbose(f"Status: {response.status_code}")
+            
+            # Print response body for debugging if not 2xx
+            if response.status_code >= 400:
+                try:
+                    error_body = response.json()
+                    self.print_verbose(f"Error response: {json.dumps(error_body, indent=2)}")
+                except:
+                    self.print_verbose(f"Error response (raw): {response.text[:200]}")
+            
             return response
         except requests.exceptions.Timeout:
             self.print_error(f"Request timed out after 30 seconds")
+            self.print_verbose(f"URL: {url}")
             return None
         except requests.exceptions.ConnectionError as e:
             self.print_error(f"Connection error: {e}")
+            self.print_verbose(f"URL: {url}")
+            self.print_warning("Is the server running? Try: python local_server.py")
             return None
         except requests.exceptions.RequestException as e:
             self.print_error(f"Request failed: {e}")
+            self.print_verbose(f"URL: {url}")
+            return None
+        except Exception as e:
+            self.print_error(f"Unexpected error: {e}")
+            self.print_verbose(f"URL: {url}")
+            import traceback
+            self.print_verbose(traceback.format_exc())
             return None
     
     def test_list_properties(self):
@@ -334,7 +353,7 @@ class APITester:
         
         response = self.make_request("GET", "/properties/nonexistent_id_12345")
         
-        if not response:
+        if response is None:
             self.print_error("Request failed")
             return
         
@@ -383,22 +402,38 @@ class APITester:
         # Invalid limit
         response = self.make_request("GET", "/properties", params={"limit": "999"})
         
-        if not response:
-            self.print_error("Request failed")
+        if response is None:
+            self.print_error("Request failed - server may not be running or connection error")
+            self.print_verbose("Check if local_server.py is running")
             return
+        
+        self.print_verbose(f"Response status: {response.status_code}")
         
         if response.status_code == 400:
             self.print_success("Correctly rejected invalid limit")
+            try:
+                error_data = response.json()
+                self.print_verbose(f"Error message: {error_data.get('error', 'N/A')}")
+            except:
+                pass
         else:
             self.print_error(f"Expected 400, got {response.status_code}")
+            try:
+                self.print_verbose(f"Response: {response.text[:200]}")
+            except:
+                pass
         
         # Invalid price
         response = self.make_request("GET", "/properties", params={"min_price": "not_a_number"})
         
-        if response and response.status_code == 400:
+        if response is None:
+            self.print_error("Request failed - server may not be running")
+            return
+        
+        if response.status_code == 400:
             self.print_success("Correctly rejected invalid price")
         else:
-            self.print_error(f"Expected 400, got {response.status_code if response else 'N/A'}")
+            self.print_error(f"Expected 400, got {response.status_code}")
     
     def test_cors_headers(self):
         """Test CORS headers are present"""
